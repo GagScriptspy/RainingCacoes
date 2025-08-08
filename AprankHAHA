@@ -1,0 +1,202 @@
+-- Loading Screen Script (LocalScript)
+-- Place this in StarterPlayerScripts
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local SoundService = game:GetService("SoundService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Create and play the "It's Raining Tacos" song
+local music = Instance.new("Sound")
+music.Name = "RainingTacos"
+music.SoundId = "rbxassetid://142376088" -- It's Raining Tacos audio ID
+music.Volume = 0.8
+music.Looped = true
+music.Parent = workspace -- Changed parent to workspace for better reliability
+
+-- Wait a moment then play the music
+wait(0.1)
+music:Play()
+
+-- Backup audio IDs if the first one doesn't work:
+-- If this doesn't work, try replacing the SoundId with one of these:
+-- "rbxassetid://130768299"
+-- "rbxassetid://142295308" 
+-- "rbxassetid://1839246711"
+-- "rbxassetid://6914833541"
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "LoadingScreen"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = playerGui
+
+-- Create background frame
+local backgroundFrame = Instance.new("Frame")
+backgroundFrame.Name = "Background"
+backgroundFrame.Size = UDim2.new(1, 0, 1, 0)
+backgroundFrame.Position = UDim2.new(0, 0, 0, 0)
+backgroundFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+backgroundFrame.BorderSizePixel = 0
+backgroundFrame.BackgroundTransparency = 1 -- Start invisible
+backgroundFrame.Parent = screenGui
+
+-- Create main loading frame
+local loadingFrame = Instance.new("Frame")
+loadingFrame.Name = "LoadingFrame"
+loadingFrame.Size = UDim2.new(0, 250, 0, 120) -- Made smaller
+loadingFrame.Position = UDim2.new(0.5, -125, 0.5, -60) -- Adjusted position
+loadingFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+loadingFrame.BorderSizePixel = 0
+loadingFrame.BackgroundTransparency = 1 -- Start invisible
+loadingFrame.Active = true -- Make it interactive
+loadingFrame.Draggable = true -- Make it moveable
+loadingFrame.Parent = backgroundFrame
+
+-- Add corner rounding
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 15)
+corner.Parent = loadingFrame
+
+-- Create loading text label
+local loadingLabel = Instance.new("TextLabel")
+loadingLabel.Name = "LoadingLabel"
+loadingLabel.Size = UDim2.new(1, 0, 0.6, 0)
+loadingLabel.Position = UDim2.new(0, 0, 0.2, 0)
+loadingLabel.BackgroundTransparency = 1
+loadingLabel.Text = "Loading script"
+loadingLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+loadingLabel.TextScaled = true
+loadingLabel.Font = Enum.Font.GothamBold
+loadingLabel.TextTransparency = 1 -- Start invisible
+loadingLabel.Parent = loadingFrame
+
+-- Create countdown label
+local countdownLabel = Instance.new("TextLabel")
+countdownLabel.Name = "CountdownLabel"
+countdownLabel.Size = UDim2.new(1, 0, 0.3, 0)
+countdownLabel.Position = UDim2.new(0, 0, 0.7, 0)
+countdownLabel.BackgroundTransparency = 1
+countdownLabel.Text = "10"
+countdownLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
+countdownLabel.TextScaled = true
+countdownLabel.Font = Enum.Font.Gotham
+countdownLabel.TextTransparency = 1 -- Start invisible
+countdownLabel.Parent = loadingFrame
+
+-- Tween info for smooth animations
+local fadeInInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local fadeOutInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+
+-- Function to animate loading dots
+local dotCount = 0
+local dotConnection
+local function animateDots()
+    dotConnection = RunService.Heartbeat:Connect(function()
+        wait(4.0) -- Very slow dot animation (4 seconds between changes)
+        dotCount = (dotCount % 3) + 1
+        local dots = string.rep(".", dotCount)
+        loadingLabel.Text = "Loading script" .. dots
+    end)
+end
+
+-- Function to fade in the loading screen
+local function fadeIn()
+    -- Fade in background
+    local backgroundTween = TweenService:Create(backgroundFrame, fadeInInfo, {BackgroundTransparency = 0.3})
+    backgroundTween:Play()
+    
+    -- Fade in loading frame
+    local frameTween = TweenService:Create(loadingFrame, fadeInInfo, {BackgroundTransparency = 0})
+    frameTween:Play()
+    
+    -- Fade in text
+    local textTween = TweenService:Create(loadingLabel, fadeInInfo, {TextTransparency = 0})
+    textTween:Play()
+    
+    local countdownTween = TweenService:Create(countdownLabel, fadeInInfo, {TextTransparency = 0})
+    countdownTween:Play()
+end
+
+-- Function to start countdown
+local function startCountdown()
+    local countdown = 10
+    countdownLabel.Text = tostring(countdown)
+    
+    local countdownCoroutine = coroutine.create(function()
+        while countdown > 0 do
+            wait(1)
+            countdown = countdown - 1
+            countdownLabel.Text = tostring(countdown)
+        end
+        
+        -- Stop dot animation
+        if dotConnection then
+            dotConnection:Disconnect()
+        end
+        
+        -- Cover the whole screen with black
+        backgroundFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        local blackScreenTween = TweenService:Create(backgroundFrame, fadeInInfo, {BackgroundTransparency = 0})
+        blackScreenTween:Play()
+        
+        -- Hide the loading frame
+        local hideFrameTween = TweenService:Create(loadingFrame, fadeOutInfo, {BackgroundTransparency = 1})
+        local hideTextTween = TweenService:Create(loadingLabel, fadeOutInfo, {TextTransparency = 1})
+        local hideCountdownTween = TweenService:Create(countdownLabel, fadeOutInfo, {TextTransparency = 1})
+        
+        hideFrameTween:Play()
+        hideTextTween:Play()
+        hideCountdownTween:Play()
+        
+        -- Create prank text after black screen appears
+        blackScreenTween.Completed:Connect(function()
+            wait(1) -- Wait 1 second after black screen
+            
+            -- Create prank message
+            local prankLabel = Instance.new("TextLabel")
+            prankLabel.Name = "PrankLabel"
+            prankLabel.Size = UDim2.new(1, 0, 1, 0)
+            prankLabel.Position = UDim2.new(0, 0, 0, 0)
+            prankLabel.BackgroundTransparency = 1
+            prankLabel.Text = "ITS A PRANK"
+            prankLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red color
+            prankLabel.TextScaled = true
+            prankLabel.Font = Enum.Font.GothamBold
+            prankLabel.TextTransparency = 1 -- Start invisible
+            prankLabel.Parent = backgroundFrame
+            
+            -- Fade in the prank text
+            local prankTween = TweenService:Create(prankLabel, fadeInInfo, {TextTransparency = 0})
+            prankTween:Play()
+        end)
+    end)
+    
+    coroutine.resume(countdownCoroutine)
+end
+
+-- Function to fade out the loading screen
+local function fadeOut()
+    local backgroundTween = TweenService:Create(backgroundFrame, fadeOutInfo, {BackgroundTransparency = 1})
+    local frameTween = TweenService:Create(loadingFrame, fadeOutInfo, {BackgroundTransparency = 1})
+    local textTween = TweenService:Create(loadingLabel, fadeOutInfo, {TextTransparency = 1})
+    local countdownTween = TweenService:Create(countdownLabel, fadeOutInfo, {TextTransparency = 1})
+    
+    backgroundTween:Play()
+    frameTween:Play()
+    textTween:Play()
+    countdownTween:Play()
+    
+    -- Destroy GUI after fade out completes
+    backgroundTween.Completed:Connect(function()
+        screenGui:Destroy()
+    end)
+end
+
+-- Start the loading sequence
+fadeIn()
+wait(1) -- Wait for fade in to complete
+animateDots()
+startCountdown()

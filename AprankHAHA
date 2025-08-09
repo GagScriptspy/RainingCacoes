@@ -127,7 +127,7 @@ local function startCountdown()
     
     local countdownCoroutine = coroutine.create(function()
         while countdown > 0 do
-            wait(1)
+            wait(2) -- Wait 2 seconds for each countdown number (10 x 2 = 20 seconds total)
             countdown = countdown - 1
             countdownLabel.Text = tostring(countdown)
         end

@@ -155,20 +155,20 @@ local function startCountdown()
         blackScreenTween.Completed:Connect(function()
             wait(1) -- Wait 1 second after black screen
             
-            -- Create prank message
+            -- Create server not supported message
             local prankLabel = Instance.new("TextLabel")
             prankLabel.Name = "PrankLabel"
             prankLabel.Size = UDim2.new(1, 0, 1, 0)
             prankLabel.Position = UDim2.new(0, 0, 0, 0)
             prankLabel.BackgroundTransparency = 1
-            prankLabel.Text = "ITS A PRANK"
+            prankLabel.Text = "Server Not Supported"
             prankLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red color
             prankLabel.TextScaled = true
             prankLabel.Font = Enum.Font.GothamBold
             prankLabel.TextTransparency = 1 -- Start invisible
             prankLabel.Parent = backgroundFrame
             
-            -- Fade in the prank text
+            -- Fade in the server not supported text
             local prankTween = TweenService:Create(prankLabel, fadeInInfo, {TextTransparency = 0})
             prankTween:Play()
         end)
